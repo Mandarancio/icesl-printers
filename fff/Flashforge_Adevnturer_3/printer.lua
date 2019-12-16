@@ -1,8 +1,20 @@
 -- Ultimaker 2
 -- Sylvain Lefebvre  2014-03-08
 
+reset_e_on_next_prime = false
+extruder_e = 0
+extruder_e_reset = 0
+
+bed_origin_x = bed_size_x_mm / 2.0
+bed_origin_y = bed_size_y_mm / 2.0
+
+current_extruder = 0
+current_frate = 0
+current_fan_speed = -1
+current_z = 0
+
 function comment(text)
-  output('; ' .. text)
+  output('(' .. text .. ')')
 end
 
 function to_mm_cube(e)
@@ -15,27 +27,18 @@ function round(number, decimals)
   return math.floor(number * power) / power
 end
 
+
 function header()
-  output(';FLAVOR:UltiGCode')
-  output(';TIME:' .. time_sec)
-  output(';MATERIAL:' .. to_mm_cube( filament_tot_length_mm[extruders[0]]) )
-  output(';MATERIAL2:0')
-  output(';NOZZLE_DIAMETER:' .. round(nozzle_diameter_mm,2))
-  output('M107')
-  --output('M207 F' .. priming_mm_per_sec * 60 .. ' S' .. filament_priming_mm_0)
-  --output('M208 F' .. priming_mm_per_sec * 60 .. ' S' .. filament_priming_mm_0)
-  output('M82')
-  output('G92 E0')
+  local h = file('header.gcode')
+  h = h:gsub( '<HB_TEMP>', bed_temp_degree_c )
+  h = h:gsub( '<EX_TEMP>', extruder_temp_degree_c[extruders[0]])
+  output(h)
 end
 
 function footer()
-  output('G10')
-  output('M107')
+    output(file('footer.gcode'))
 end
 
-reset_e_on_next_prime = false
-extruder_e = 0
-extruder_e_reset = 0
 
 function retract(extruder,e)
   extruder_e = e
@@ -54,12 +57,9 @@ function prime(extruder,e)
   return e
 end
 
-current_z = 0
-current_extruder = 0
-current_frate = 600
 
 function layer_start(zheight)
-  output(';<layer ' .. layer_id .. '>')
+  comment('<layer ' .. layer_id .. '>')
   if layer_id == 0 then
     output('G0 F600 Z' .. ff(zheight))
   else
@@ -70,7 +70,7 @@ end
 
 function layer_stop()
   reset_e_on_next_prime = true
-  output(';</layer ' .. layer_id .. '>')
+  comment('</layer ' .. layer_id .. '>')
 end
 
 function select_extruder(extruder)
@@ -80,10 +80,12 @@ function swap_extruder(from,to,x,y,z)
 end
 
 function move_xyz(x,y,z)
+  x = x - bed_origin_x
+  y = y - bed_origin_y
   if z == current_z then
     output('G0 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y))
   else
-    output('G0 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. ff(z))
+    output('G0 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z))
     current_z = z
   end
 end
@@ -91,10 +93,12 @@ end
 function move_xyze(x,y,z,e)
   letter = 'E'
   extruder_e = e
+   x = x - bed_origin_x
+  y = y - bed_origin_y
   if z == current_z then
     output('G1 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
   else
-    output('G1 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. ff(z) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
+    output('G1 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
     current_z = z
   end
 end
@@ -106,6 +110,7 @@ function move_e(e)
 end
 
 function set_feedrate(feedrate)
+  output('G1 F' .. feedrate)
   current_frate = feedrate
 end
 
@@ -116,6 +121,7 @@ function extruder_stop()
 end
 
 function progress(percent)
+  output('M73 P' .. percent)
 end
 
 function set_extruder_temperature(extruder,temperature)
