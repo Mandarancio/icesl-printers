@@ -24,8 +24,8 @@ G28							 ; Move to home
 M132 X Y Z A B			     ; Load home offsets
 G1 Z50.000 F420				 ; Move Z in position
 G161 X Y F3300			     ; Home axis to minimum
-M7 T0						 ; Black magic (??)
-M6 T0						 ; Black magic (??)
+M7 T0						 ; Wait for HB
+M6 T0						 ; Wait for extruder
 M651						 ; Execute peel move
 M907 X100 Y100 Z40 A80 B20   ; Init motors
 

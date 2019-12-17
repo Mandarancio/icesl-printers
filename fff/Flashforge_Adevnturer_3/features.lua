@@ -22,8 +22,8 @@ bed_temp_degree_c     = 50
 perimeter_print_speed_mm_per_sec_min = 5
 perimeter_print_speed_mm_per_sec_max = 100
 
-first_layer_print_speed_mm_per_sec = 10
-first_layer_print_speed_mm_per_sec_min = 1
+first_layer_print_speed_mm_per_sec = 30
+first_layer_print_speed_mm_per_sec_min = 5
 first_layer_print_speed_mm_per_sec_max = 100
 
 for i=0,63,1 do

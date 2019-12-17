@@ -42,29 +42,24 @@ end
 
 function retract(extruder,e)
   extruder_e = e
-  output('G10')
+  local len = filament_priming_mm[extruder]
+  local speed = priming_mm_per_sec[extruder] * 60
+  output('G1 F' .. f(speed) .. ' E' .. ff(e-len))
   return e
 end
 
 function prime(extruder,e)
   extruder_e = e
-  output('G11')
-  if reset_e_on_next_prime == true then
-    output('G92 E0')
-    extruder_e_reset = extruder_e
-    reset_e_on_next_prime = false
-  end
+  local len = filament_priming_mm[extruder]
+  local speed = priming_mm_per_sec[extruder] * 60
+  output('G1 F' .. f(speed) .. ' E' .. ff(e+len))
   return e
 end
 
 
 function layer_start(zheight)
   comment('<layer ' .. layer_id .. '>')
-  if layer_id == 0 then
-    output('G0 F600 Z' .. ff(zheight))
-  else
-    output('G0 F100 Z' .. ff(zheight))
-  end
+  output('G0 Z' .. f(zheight))
   current_z = zheight
 end
 
@@ -91,22 +86,20 @@ function move_xyz(x,y,z)
 end
 
 function move_xyze(x,y,z,e)
-  letter = 'A'
   extruder_e = e
   x = x - bed_origin_x
   y = y - bed_origin_y
   if z == current_z then
-    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
+    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' E' .. ff(e))
   else
-    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
+    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z) .. ' E' .. ff(e))
     current_z = z
   end
 end
 
 function move_e(e)
-  letter = 'E'
   extruder_e = e
-  output('G1 ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)))
+  output('G1 E' .. ff(e))
 end
 
 function set_feedrate(feedrate)
@@ -115,9 +108,11 @@ function set_feedrate(feedrate)
 end
 
 function extruder_start()
+  output('M101')
 end
 
 function extruder_stop()
+  output('M103')
 end
 
 function progress(percent)
@@ -126,6 +121,11 @@ end
 
 function set_extruder_temperature(extruder,temperature)
   output('M104 S' .. f(temperature) .. ' T' .. extruder)
+end
+
+function set_and_wait_extruder_temperature(extruder, temperature)
+  output('M104 S' .. f(temperature) .. ' T' .. extruder)
+  output('M6 T'.. extruder)
 end
 
 current_fan_speed = -1
