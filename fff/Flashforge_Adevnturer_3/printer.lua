@@ -14,7 +14,7 @@ current_fan_speed = -1
 current_z = 0
 
 function comment(text)
-  output('(' .. text .. ')')
+  output('; ' .. text)
 end
 
 function to_mm_cube(e)
@@ -83,22 +83,22 @@ function move_xyz(x,y,z)
   x = x - bed_origin_x
   y = y - bed_origin_y
   if z == current_z then
-    output('G0 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y))
+    output('G0 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y))
   else
-    output('G0 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z))
+    output('G0 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z))
     current_z = z
   end
 end
 
 function move_xyze(x,y,z,e)
-  letter = 'E'
+  letter = 'A'
   extruder_e = e
-   x = x - bed_origin_x
+  x = x - bed_origin_x
   y = y - bed_origin_y
   if z == current_z then
-    output('G1 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
+    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
   else
-    output('G1 F' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
+    output('G1 X' .. f(current_frate) .. ' X' .. f(x) .. ' Y' .. f(y) .. ' Z' .. f(z) .. ' ' .. letter .. ff(to_mm_cube(e - extruder_e_reset)) )
     current_z = z
   end
 end

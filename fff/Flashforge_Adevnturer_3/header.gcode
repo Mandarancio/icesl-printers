@@ -1,39 +1,32 @@
-(*** FlashForge Creator Pro start.gcode ***)
-M73 P0 (enable build progress)
-G21 (set units to mm)
-G90 (set positioning to absolute)
-M82 (set extrusion mode to absolute)
+;*** FlashForge Adventurer 3 header.gcode ***
+;layer_height: <LY_HEIGHT>
+;perimeter_shells: <PERIMITER>
+;top_solid_layers: <TOP_LAYER>
+;bottom_solid_layers: <BOTTOM_LAYER>
+;fill_density: <FILL>
+;fill_pattern: <FILL_PATTERN>
+;base_print_speed: <BASE_SPEED>
+;travel_speed: <TRAVEL_SPEED>
+;right_extruder_temperature: <EX_TEMP>
+;platform_temperature: <HB_TEMP>
 
-(*** begin homing ***)
-G162 X Y F2500 (home XY axes maximum)
-G161 Z F1100 (home Z axis minimum)
-G92 Z-5 (set Z to -5)
-G1 Z0.0 (move Z to "0")
-G161 Z F100 (home Z axis minimum)
-M132 X Y Z A B (recall stored home offsets for XYZAB axis)
-(*** end homing ***)
+;start gcode
 
-G130 X20 Y20 Z20 A20 B20 (lower stepper Vrefs while heating)
+M118 X25.55 Y25.55 Z21.00 T0
+M140 S<HB_TEMP> T0           ; Set HB temperature
+M104 S<EX_TEMP> T0			 ; Set extruder temperature
+M104 S0 T1					 ; Disable second extruder (precautuin)
+M107						 ; Fan OFF
+G90							 ; Set absolute position
 
-M127 (disable fan)
-M140 S<HB_TEMP> T0 (set HB temperature)
-M104 S<EX_TEMP> T0 (set extruder temperature)
-M133 T0            (stabilize extruder temperature)
+;homing
+G28							 ; Move to home						
+M132 X Y Z A B			     ; Load home offsets
+G1 Z50.000 F420				 ; Move Z in position
+G161 X Y F3300			     ; Home axis to minimum
+M7 T0						 ; Black magic (??)
+M6 T0						 ; Black magic (??)
+M651						 ; Execute peel move
+M907 X100 Y100 Z40 A80 B20   ; Init motors
 
-M134 T0 (wait for bed temp)
-
-G130 X127 Y127 Z40 A127 B127 (set Stepper motor Vref to defaults)
-
-G92 A0 B0 (zero extruders)
-G0 Z0.4 (position nozzle to begin purge)
-
-M135 T0 (select left tool - extruder 0)
-G1 X-110 Y-70 F9000 (reposition nozzle)
-G1 X-100 Y-70 A25 F300 (purge nozzle)
-G1 X-110 Y-70 Z0.15 F1200 (slow wipe)
-G1 X-100 Y-70 Z0.5 F1200 (lift)
-
-G92 A0 B0 (zero extruders)
-
-M73 P1 (notify GPX body has started)
-(*** end of start.gcode ***)
+;*** end of header.gcode ***
